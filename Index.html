@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Museum of Acceptable Pain</title>
+  <meta name="theme-color" content="#090909" />
+  <style>
+    :root{
+      --black:#080808;
+      --paper:#e8dfcd;
+      --muted:#aaa08f;
+      --gold:#a67b3b;
+      --red:#7e1418;
+      --glass:rgba(255,255,255,.05);
+      --line:rgba(232,223,205,.14);
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      background:var(--black);
+      color:var(--paper);
+      font-family:Georgia,"Times New Roman",serif;
+      overflow-x:hidden;
+    }
+
+    body.alarm{
+      background:#020202;
+    }
+
+    .museum-header{
+      position:fixed;
+      inset:0 0 auto 0;
+      z-index:50;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:18px 24px;
+      background:linear-gradient(to bottom,rgba(8,8,8,.96),rgba(8,8,8,.72),transparent);
+      pointer-events:none;
+    }
+
+    .museum-header span{
+      font-size:10px;
+      letter-spacing:.24em;
+      text-transform:uppercase;
+      color:var(--muted);
+    }
+
+    .gallery{
+      scroll-snap-type:y mandatory;
+    }
+
+    .room{
+      min-height:100vh;
+      scroll-snap-align:start;
+      display:grid;
+      grid-template-columns:minmax(0,1fr) minmax(280px,420px);
+      gap:clamp(30px,5vw,80px);
+      align-items:center;
+      padding:110px clamp(24px,7vw,110px) 70px;
+      border-bottom:1px solid var(--line);
+      position:relative;
+    }
+
+    .room::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background:
+        linear-gradient(90deg,rgba(255,255,255,.015),transparent 35%),
+        radial-gradient(circle at 80% 15%,rgba(166,123,59,.05),transparent 28%);
+    }
+
+    .fragment{
+      position:relative;
+      padding:clamp(28px,4vw,58px);
+      border:1px solid rgba(232,223,205,.14);
+      background:linear-gradient(145deg,rgba(255,255,255,.025),rgba(255,255,255,.008));
+      box-shadow:0 20px 70px rgba(0,0,0,.35);
+      backdrop-filter:blur(6px);
+    }
+
+    .fragment::after{
+      content:"";
+      position:absolute;
+      inset:12px;
+      border:1px solid rgba(232,223,205,.05);
+      pointer-events:none;
+    }
+
+    .fragment p{
+      margin:0;
+      font-size:clamp(28px,4.2vw,66px);
+      line-height:1.08;
+      letter-spacing:-.025em;
+    }
+
+    .placard{
+      align-self:center;
+      padding:26px 24px 30px;
+      background:#ded7c9;
+      color:#161514;
+      box-shadow:0 16px 50px rgba(0,0,0,.35);
+    }
+
+    .placard .number{
+      display:block;
+      margin-bottom:18px;
+      font:600 10px/1.2 Arial,sans-serif;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      color:#6f685d;
+    }
+
+    .placard h2{
+      margin:0 0 14px;
+      font-size:18px;
+      line-height:1.15;
+      font-weight:600;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+    }
+
+    .placard p{
+      margin:0;
+      font:14px/1.55 Arial,sans-serif;
+      color:#514c44;
+    }
+
+    .room.final-room{
+      grid-template-columns:1fr;
+      text-align:center;
+      place-items:center;
+      padding-inline:24px;
+    }
+
+    .purpose{
+      max-width:1000px;
+      font-size:clamp(44px,8vw,120px);
+      line-height:.9;
+      letter-spacing:-.055em;
+      text-transform:uppercase;
+      margin:0;
+    }
+
+    .lever-wrap{
+      margin-top:56px;
+      display:grid;
+      justify-items:center;
+      gap:18px;
+    }
+
+    .lever-label{
+      font:700 11px/1 Arial,sans-serif;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      color:var(--paper);
+    }
+
+    .lever{
+      width:86px;
+      height:180px;
+      border:1px solid rgba(232,223,205,.24);
+      background:#131313;
+      position:relative;
+      cursor:pointer;
+      box-shadow:inset 0 0 0 8px #090909,0 18px 50px rgba(0,0,0,.45);
+    }
+
+    .lever::before{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:24px;
+      width:12px;
+      height:92px;
+      background:#8d8a83;
+      transform:translateX(-50%) rotate(0deg);
+      transform-origin:50% 80%;
+      transition:transform .55s cubic-bezier(.2,.8,.2,1);
+      box-shadow:0 0 0 2px #3d3b37;
+    }
+
+    .lever::after{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:12px;
+      width:34px;
+      height:34px;
+      border-radius:50%;
+      background:var(--red);
+      transform:translateX(-50%);
+      box-shadow:0 4px 12px rgba(0,0,0,.5);
+      transition:transform .55s cubic-bezier(.2,.8,.2,1),top .55s;
+    }
+
+    .lever.pulled::before{
+      transform:translateX(-50%) rotate(180deg);
+    }
+
+    .lever.pulled::after{
+      top:132px;
+    }
+
+    .instruction{
+      font-size:15px;
+      font-style:italic;
+      opacity:.52;
+    }
+
+    .truth{
+      display:none;
+      min-height:100vh;
+      padding:100px clamp(22px,8vw,130px);
+      background:#020202;
+    }
+
+    body.alarm .gallery,
+    body.alarm .museum-header{
+      display:none;
+    }
+
+    body.alarm .truth{
+      display:block;
+      animation:appear 1.2s ease both;
+    }
+
+    @keyframes appear{
+      from{opacity:0}
+      to{opacity:1}
+    }
+
+    .truth-inner{
+      max-width:900px;
+      margin:0 auto;
+    }
+
+    .truth-kicker{
+      font:600 10px/1 Arial,sans-serif;
+      letter-spacing:.24em;
+      text-transform:uppercase;
+      color:var(--red);
+      margin-bottom:46px;
+    }
+
+    .truth h1{
+      margin:0 0 58px;
+      font-size:clamp(54px,9vw,126px);
+      line-height:.9;
+      font-weight:400;
+      letter-spacing:-.055em;
+      text-transform:uppercase;
+    }
+
+    .truth-copy{
+      font-size:clamp(21px,2.2vw,31px);
+      line-height:1.58;
+    }
+
+    .truth-copy p{
+      margin:0 0 1.45em;
+    }
+
+    .exit-line{
+      margin:110px 0 40px;
+      padding-top:34px;
+      border-top:1px solid rgba(232,223,205,.12);
+      font-size:clamp(30px,4vw,56px);
+      line-height:1.12;
+      color:var(--paper);
+    }
+
+    .reset{
+      appearance:none;
+      border:1px solid rgba(232,223,205,.24);
+      background:transparent;
+      color:var(--paper);
+      padding:14px 18px;
+      font:600 10px/1 Arial,sans-serif;
+      letter-spacing:.2em;
+      text-transform:uppercase;
+      cursor:pointer;
+      opacity:.55;
+      text-decoration:none;
+      display:inline-block;
+    }
+
+    @media(max-width:760px){
+      .room{
+        grid-template-columns:1fr;
+        align-content:center;
+      }
+
+      .placard{
+        width:min(100%,420px);
+      }
+
+      .fragment p{
+        font-size:clamp(34px,10vw,58px);
+      }
+
+      .museum-header{
+        padding:16px 18px;
+      }
+
+      .museum-header span:last-child{
+        display:none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="museum-header">
+    <span>The Museum of Acceptable Pain</span>
+    <span>Permanent Collection</span>
+  </header>
+
+  <main class="gallery">
+    <section class="room">
+      <div class="fragment">
+        <p>Trying to explain the fire without showing the burns.</p>
+      </div>
+      <aside class="placard">
+        <span class="number">Gallery I</span>
+        <h2>Fire as Transformation</h2>
+        <p>The artist uses fire as a metaphor for resilience, renewal, and personal growth.</p>
+      </aside>
+    </section>
+
+    <section class="room">
+      <div class="fragment">
+        <p>I came with the silence of men who were never asked what a cruel world had torn from them.</p>
+      </div>
+      <aside class="placard">
+        <span class="number">Gallery II</span>
+        <h2>Masculinity and Healing</h2>
+        <p>A meditation on emotional expression, vulnerability, and the restorative power of being heard.</p>
+      </aside>
+    </section>
+
+    <section class="room">
+      <div class="fragment">
+        <p>People stop asking what it actually felt like.</p>
+      </div>
+      <aside class="placard">
+        <span class="number">Gallery III</span>
+        <h2>The Shared Human Experience</h2>
+        <p>The work invites viewers to recognize common pain and discover connection through empathy.</p>
+      </aside>
+    </section>
+
+    <section class="room">
+      <div class="fragment">
+        <p>It’s disappearance.</p>
+      </div>
+      <aside class="placard">
+        <span class="number">Gallery IV</span>
+        <h2>Reclaiming the Self</h2>
+        <p>Through self-acceptance, the artist moves beyond isolation and toward empowerment.</p>
+      </aside>
+    </section>
+
+    <section class="room final-room">
+      <div>
+        <p class="purpose">Your pain can become your purpose.</p>
+        <div class="lever-wrap">
+          <div class="lever-label">In Case of Fire</div>
+          <button class="lever" id="lever" aria-label="Pull emergency lever"></button>
+          <div class="instruction">Pull to disable interpretation.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <section class="truth" id="truth">
+    <div class="truth-inner">
+      <div class="truth-kicker">The work, without permission or explanation</div>
+      <h1>I Am Not Here to Be Understood</h1>
+
+      <div class="truth-copy">
+        <p>There are days I think about how much of my life I spent trying to make sense to other people.</p>
+
+        <p>Trying to explain the fire without showing the burns. Trying to tell the story in a way that wouldn’t make them look away.</p>
+
+        <p>And the trouble is, once you get good at that, once you learn how to soften the blade, how to make your grief sound poetic, people stop asking what it actually felt like. They don’t want the real story. They want the one they can applaud at the end.</p>
+
+        <p>But that’s not the one I came to tell.</p>
+
+        <p>I wasn’t born easily and I didn’t come here in comfort. I didn’t come with my hands clasped in prayer and my voice polished. I came with the silence of men who were never asked what a cruel world had torn from them. I came with a boy’s voice still breaking from all the times it wasn’t safe to speak. I came with the fury that lives in a man who learned how to survive by swallowing more than his own sorrow.</p>
+
+        <p>And I’ll be honest with you, it’s taken most of my life to see it.</p>
+
+        <p>To understand that I am not difficult. I am not broken in a way that needs fixing. I am simply tired of being turned into a lesson for people who never cared to hear the truth. And the truth is uncomfortable, some of us were never meant to be understood. We were meant to be remembered.</p>
+
+        <p>Not for how well we explained ourselves, but for how honestly we stood in crowds that did not know what to do with us. You learn, eventually, that making yourself legible to people who never learned your way of speaking is not kindness.</p>
+
+        <p>It’s disappearance.</p>
+
+        <p>So now, I say it.</p>
+
+        <p>I am not here to be understood.</p>
+
+        <p>Not in the way the world demands. Not in the way that makes my pain palatable and my story convenient. If I speak now, it’s not because I need validation. It’s because my truth still matters to me. Even when no one claps for it. And my truth is not a performance. It is not an invitation for dissection. It is a fire. And it will not quench itself to make itself praised.</p>
+
+        <p>So if you are here, truly here, then sit with me in it.</p>
+
+        <p>You don’t have to understand every word.</p>
+
+        <p>You just have to stop asking me to disappear inside them.</p>
+      </div>
+
+      <div class="exit-line">His fire did not need your understanding. Only your witness.</div>
+      <a class="reset" id="reset" href="https://thebastardsaint.com/the-foyer">Return to the Foyer</a>
+    </div>
+  </section>
+
+  <script>
+    const lever = document.getElementById("lever");
+    const reset = document.getElementById("reset");
+
+    lever.addEventListener("click", () => {
+      lever.classList.add("pulled");
+      setTimeout(() => {
+        document.body.classList.add("alarm");
+        window.scrollTo({ top: 0, behavior: "instant" });
+      }, 650);
+    });
+
+  </script>
+</body>
+</html>
